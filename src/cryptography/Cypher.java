@@ -1,48 +1,48 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package cryptography;
-import java.security.*;
-import javax.crypto.*;
-
 // Xifratge AES
 // More info in https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html
+
+package cryptography;
+
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import javax.crypto.*;
+
+
 public class Cypher
 {
-	// Singleton instance
-	protected static Cypher	_instance = null;
-	protected static String	_algorithm = "AES";	// AES/CBC/NoPadding, AES/CBC/PKCS5Padding
-	protected static int	_keyLength = 128;
+	// Protected attributes
+	protected String		algorithm = "AES";		// AES/CBC/NoPadding, AES/CBC/PKCS5Padding
+	protected int			keyLength = 128;		// 128, 256, 512
 
-	
+
 	// Cipher variables
 	protected Cipher		ci;
 	protected KeyGenerator	keyGen;
 	protected SecretKey		secretKey;
-
-	//Static auxiliary representations variables
-	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
-
-	public static Cypher getInstance() {
-		if (_instance == null) {
-			_instance = new Cypher();
-		}
-		return _instance;
+	
+	public Cypher()
+	{
+		this("AES",128);
 	}
 	
-	protected Cypher()
+	public Cypher(String algorithm, int keyLength)
 	{
+		this.algorithm = algorithm;
+		this.keyLength = keyLength;
+		
 		try {
-			ci = Cipher.getInstance(_algorithm);
-			keyGen = KeyGenerator.getInstance(_algorithm);
-			keyGen.init(_keyLength);
+			// Instantiate algorithm
+			ci = Cipher.getInstance(algorithm);
+
+			// Instantiate key generator
+			keyGen = KeyGenerator.getInstance(algorithm);
+			keyGen.init(keyLength);
 			secretKey = keyGen.generateKey();
 		} catch (NoSuchAlgorithmException ex) {
-			System.err.println("Error: No existe el algortimo " + _algorithm);
+			System.err.println("Error: No existe el algortimo " + algorithm);
 		} catch (NoSuchPaddingException ex) {
-			System.err.println("Error con el algortimo " + _algorithm);
+			System.err.println("Error con el algoritmo " + algorithm);
 		}
 	}
 	
@@ -57,9 +57,9 @@ public class Cypher
 		} catch (InvalidKeyException ex) {
 			System.err.println("Error la clave privada utilizada " + secretKey.toString());
 		} catch (IllegalBlockSizeException ex) {
-			System.err.println("Error en el tamaño de bloque del algortimo " + _algorithm);
+			System.err.println("Error en el tamaño de bloque del algortimo " + algorithm);
 		} catch (BadPaddingException ex) {
-			System.err.println("Error en el relleno de bloque del algortimo" + _algorithm);
+			System.err.println("Error en el relleno de bloque del algortimo" + algorithm);
 		}
 		return null;
 	}
@@ -75,22 +75,21 @@ public class Cypher
 		} catch (InvalidKeyException ex) {
 			System.err.println("Error la clave privada utilizada " + secretKey.toString());
 		} catch (IllegalBlockSizeException ex) {
-			System.err.println("Error en el tamaño de bloque del algortimo " + _algorithm);
+			System.err.println("Error en el tamaño de bloque del algortimo " + algorithm);
 		} catch (BadPaddingException ex) {
-			System.err.println("Error en el relleno de bloque del algortimo" + _algorithm);
+			System.err.println("Error en el relleno de bloque del algortimo" + algorithm);
 		}
 			return null;
 	}
 	
+	// String encode/decode
 	public String encodeString(String msg)		// Xifrar
 	{
-		return new String(encode(msg.getBytes()));
+		return new String(encode(msg.getBytes(StandardCharsets.UTF_8)));
 	}
 	
 	public String decodeString(byte[] msg)		// desxifrar
 	{
 		return new String(decode(msg));
 	}
-	
 }
-

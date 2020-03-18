@@ -3,7 +3,7 @@ package cryptography;
 public class CryptoUtils
 {
 	//Static auxiliary representations variables
-	final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+	final protected static char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 	
 	protected static String bytesToHex(byte[] bytes)
 	{
@@ -11,8 +11,8 @@ public class CryptoUtils
 		for ( int i = 0; i < bytes.length; i++ )
 		{
 			int v = bytes[i] & 0xFF;
-			hexChars[i * 2] = hexArray[v >>> 4];
-			hexChars[i * 2 + 1] = hexArray[v & 0x0F];
+			hexChars[i * 2] = HEX_ARRAY[v >>> 4];
+			hexChars[i * 2 + 1] = HEX_ARRAY[v & 0x0F];
 		}
 	return new String(hexChars);
 }
