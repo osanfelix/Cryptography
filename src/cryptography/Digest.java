@@ -4,6 +4,8 @@
 // Get Bytes help:
 // https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#getBytes-java.nio.charset.Charset-
 
+// Garceta: pag. 257	DELETE
+
 package cryptography;
 
 
@@ -11,6 +13,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import java.io.File;						// Files
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;	// String.getBytes
 
 import java.util.Arrays;
@@ -41,24 +46,38 @@ public class Digest
 	public byte[] doHash(byte[] input)
 	{
 		md.update(input);
-		return md.digest();
+		return md.digest();	// also works 'md.digest(input)' without update.
 	}
 	
 	public String doHash(String text)
 	{
-		
 		md.update(text.getBytes(StandardCharsets.UTF_8));
-		//md.update(text.getBytes("UTF-8")); // required try-catch
-		//md.update(text.getBytes());	// Not recomended
+		//md.update(text.getBytes("UTF-8"));	// required try-catch/finally
+		//md.update(text.getBytes());			// Not recomended
 		
 		byte[] hashByte = md.digest();
 		
 		return CryptoUtils.bytesToHex(hashByte);
 	}
 	
-	public String doHash(File route)
+	public String doHash(File route) throws IOException 
 	{
-		// TODO
+		// Since Java SE 7 you can save finally block.
+		// FileInputStream implements Java.lang.AutoCloseable
+		try(InputStream in = new FileInputStream(route)) {
+			
+			if(route.isFile()) {
+				//Create byte array to read data in chunks
+				byte[] byteArray = new byte[1024];
+				int bytesCount = 0; 
+
+				while((bytesCount = in.read(byteArray))!= -1){
+					md.update(byteArray, 0, bytesCount);	
+				}
+				
+				return CryptoUtils.bytesToHex(md.digest());
+			}
+		}
 		return null;
 	}
 	

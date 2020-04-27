@@ -1,5 +1,6 @@
 // Xifratge AES
 // More info in https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html
+// Garceta 269 DELETE
 
 package cryptography;
 
