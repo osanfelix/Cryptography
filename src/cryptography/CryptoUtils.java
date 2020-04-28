@@ -14,8 +14,18 @@ public class CryptoUtils
 			hexChars[i * 2] = HEX_ARRAY[v >>> 4];
 			hexChars[i * 2 + 1] = HEX_ARRAY[v & 0x0F];
 		}
-	return new String(hexChars);
-}
+		return new String(hexChars);
+        }
+        
+        public static String bytesToHex2(byte[] resumen) {
+		String hex = "";
+		for (int i = 0; i < resumen.length; i++) {
+			String h = Integer.toHexString(resumen[i] & 0xFF);
+			if (h.length() == 1) hex += "0";
+			hex += h;
+		}
+		return hex.toUpperCase();
+        }
 	/*
 	public static byte[] hexStringToByteArray(String s) {
     int len = s.length();
