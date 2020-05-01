@@ -2,7 +2,7 @@
 // https://docs.oracle.com/javase/8/docs/api/java/security/MessageDigest.html
 
 // Get Bytes help:
-// https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#getBytes-java.nio.charset.Charset-
+// https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#getBytes-java.nio.charset.Charset
 
 // Garceta: pag. 257	DELETE
 
@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;	// String.getBytes
 import java.util.Arrays;
 import javax.crypto.*;
 import javax.crypto.spec.SecretKeySpec;
+
 
 public class Digest
 {
@@ -62,7 +63,7 @@ public class Digest
 	
 	public String doHash(File route) throws IOException 
 	{
-		// Since Java SE 7 you can save finally block.
+		// Since Java SE 7 you can avoid finally block.
 		// FileInputStream implements Java.lang.AutoCloseable
 		try(InputStream in = new FileInputStream(route)) {
 			
@@ -82,19 +83,19 @@ public class Digest
 	}
 	
 	// Generate a key from String
-	public SecretKey passwordKeyGenerator(String text, int keySize)
+	public SecretKey passwordKeyGenerator(String text, int keySize, String algoritm)
 	{
-		if ((keySize == 128)||(keySize == 192)||(keySize == 256))
+		if (keySize%8 == 0)
 		{
 			try
 			{
 				byte[] hashByte = doHash(text.getBytes());
-				return new SecretKeySpec(Arrays.copyOf(hashByte, keySize/8), "AES");
+				return new SecretKeySpec(Arrays.copyOf(hashByte, keySize/8), algoritm);
 			} catch (Exception ex) {
 				System.err.println("Error generant la clau:" + ex);
 			}
 		}
+		System.err.println("Error: Longitud clau no multiple de 8.");
 		return null;
 	}
 }
-
