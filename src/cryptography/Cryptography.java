@@ -2,6 +2,7 @@ package cryptography;
 
 import java.io.File;
 import java.io.IOException;
+import javax.crypto.ShortBufferException;
 
 
 public class Cryptography
@@ -23,7 +24,7 @@ public class Cryptography
 			
 // ###################### EXEMPLES DE XIFRAT #######################
 			// Xifratge AES
-			Cypher AESCipher = new Cypher("AES/ECB/PKCS5Padding","fd", 192,"AES");
+			Cypher AESCipher = new Cypher("AES","contrsenya1", 256,"AES");
 
 			// Xifratge DES. En realitat la clau té 64 bits, encara que demana 56
 			Cypher DESCipher = new Cypher("DES/ECB/PKCS5Padding",null, 56 , "DES");
@@ -46,10 +47,18 @@ public class Cryptography
 							AESCipher.encode("Text a xifrar".getBytes())));
 			
 			// Xifratge i desxifratge d'un fitxer
-			// TODO
+			
+			Cypher AESCipher2 = new Cypher("AES","contrsenya1", 256,"AES");
+			AESCipher2.encode(new File("project_files"+File.separator+"image.jpg")
+					, new File("project_files"+File.separator+"encoded_image.jpg"));
+			
+			AESCipher2.decode(new File("project_files"+File.separator+"encoded_image.jpg")
+					, new File("project_files"+File.separator+"decoded_image.jpg"));
 
 		} catch (IOException ex) {
 			System.err.println("Error d'entrada/sortida: " + ex);
+		} catch (ShortBufferException ex) {
+			System.err.println("Error de buffer: " + ex);
 		}
 		
 }

@@ -6,6 +6,12 @@
 package cryptography;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -62,7 +68,7 @@ public class Cypher
 		this(algorithm, null, keyLength, keyAlgorithm);
 	}
 	
-	public SecretKey convertKey(String key, int keyLength, String keyAlgorithm)
+	public final SecretKey convertKey(String key, int keyLength, String keyAlgorithm)
 	{
 		// Convert String to valid SecretKey
 		Digest keyHash = new Digest("SHA-1");
@@ -117,11 +123,67 @@ public class Cypher
 	}
 	
 	// TODO
-	public File encode(File file)		// Xifrar
-	{return null;}
+	public File encode(File fileIn, File fileOut) throws IOException, ShortBufferException 		// Xifrar
+	{
+		try(InputStream in = new FileInputStream(fileIn);OutputStream out = new FileOutputStream(fileOut) ) {
+			byte[] byteArray = new byte[1024];
+			byte[] outBytes = new byte[4096];
+			int outCount = 0;
+			int bytesCount = 0;
+			
+			ci.init(Cipher.ENCRYPT_MODE, secretKey);
+			
+			// DO NOT WORK
+//			while((bytesCount = in.read(byteArray)) != -1) {
+//				ci.update(byteArray, 0, bytesCount, outBytes, outCount);
+//				outCount += bytesCount;
+//			}
+//			outCount += ci.doFinal(outBytes, outCount);
+//			out.write(outBytes, 0, outCount);
+//			out.close();
+
+
+			while((bytesCount = in.read(byteArray)) != -1) {
+				out.write(ci.update(byteArray, 0, bytesCount));
+				
+			}
+			out.write(ci.doFinal());
+			out.close();
+		
+		} catch (InvalidKeyException ex) {
+			System.err.println("Error la clave privada utilizada " + secretKey.toString());
+		} catch (IllegalBlockSizeException ex) {
+			System.err.println("Error en el tamaño de bloque del algortimo " + algorithm);
+		} catch (BadPaddingException ex) {
+			System.err.println("Error en el relleno de bloque del algortimo" + algorithm);
+		}
+		
+		return null;
+	}
 	
 	// TODO
-	public File decode(File file)		// Xifrar
-	{return null;}
+	public File decode(File fileIn, File fileOut) throws IOException, ShortBufferException 		// Desxifrar
+	{
+		try(InputStream in = new FileInputStream(fileIn);OutputStream out = new FileOutputStream(fileOut) ) {
+			byte[] byteArray = new byte[1024];
+			int bytesCount = 0;
+			
+			ci.init(Cipher.DECRYPT_MODE, secretKey);
+
+			while((bytesCount = in.read(byteArray)) != -1) {
+				out.write(ci.update(byteArray, 0, bytesCount));
+			}
+			out.write(ci.doFinal());
+			out.close();
+		} catch (InvalidKeyException ex) {
+			System.err.println("Error la clave privada utilizada " + secretKey.toString());
+		} catch (IllegalBlockSizeException ex) {
+			System.err.println("Error en el tamaño de bloque del algortimo " + algorithm);
+		} catch (BadPaddingException ex) {
+			System.err.println("Error en el relleno de bloque del algortimo" + algorithm);
+		}
+		
+		return null;
+	}
 	
 }
