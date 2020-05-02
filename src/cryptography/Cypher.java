@@ -46,7 +46,7 @@ public class Cypher
 				keyGen = KeyGenerator.getInstance(keyAlgorithm);
 				keyGen.init(keyLength);
 				secretKey = keyGen.generateKey();
-			} else {
+			} else {			// Use the digest of a string
 				secretKey = this.convertKey(key, keyLength, keyAlgorithm);
 			}
 			
@@ -57,9 +57,11 @@ public class Cypher
 			ci = Cipher.getInstance(algorithm);
 			
 		} catch (NoSuchAlgorithmException ex) {
-			System.err.println("Error: No existeix l'algorisme " + algorithm);
+			System.err.println("Error: No existeix l'algorisme: "
+					+ algorithm + "Exception: " + ex);
 		} catch (NoSuchPaddingException ex) {
-			System.err.println("Error amb l'algorisme " + algorithm);
+			System.err.println("Error amb l'algorisme: "
+					+ algorithm + "Exception: " + ex);
 		}
 	}
 	
@@ -82,15 +84,17 @@ public class Cypher
 			ci.init(Cipher.ENCRYPT_MODE, secretKey);
 			encodedText = ci.doFinal(msg);
 			
-			return encodedText;
 		} catch (InvalidKeyException ex) {
-			System.err.println("Error la clave privada utilizada " + secretKey.toString());
+			System.err.println("Error amb la clau privada: "
+					+ secretKey.toString() + "Exception: " + ex);
 		} catch (IllegalBlockSizeException ex) {
-			System.err.println("Error en el tamaño de bloque del algortimo " + algorithm);
+			System.err.println("Error amb el tamany del bloc de l'algorisme: "
+					+ algorithm + "Exception: " + ex);
 		} catch (BadPaddingException ex) {
-			System.err.println("Error en el relleno de bloque del algortimo" + algorithm);
+			System.err.println("Error amb el farciment (padding) del bloc de l'algorisme: "
+					+ algorithm + "Exception: " + ex);
 		}
-		return null;
+		return encodedText;
 	}
 	
 	public byte[] decode(byte[] encodedText)		// Desxifrar
@@ -102,11 +106,14 @@ public class Cypher
 
 			return decodedText;
 		} catch (InvalidKeyException ex) {
-			System.err.println("Error la clave privada utilizada " + secretKey.toString());
+			System.err.println("Error amb la clau privada: "
+					+ secretKey.toString() + "Exception: " + ex);
 		} catch (IllegalBlockSizeException ex) {
-			System.err.println("Error en el tamaño de bloque del algortimo " + algorithm);
+			System.err.println("Error amb el tamany del bloc de l'algorisme: "
+					+ algorithm + "Exception: " + ex);
 		} catch (BadPaddingException ex) {
-			System.err.println("Error en el relleno de bloque del algortimo" + algorithm);
+			System.err.println("Error amb el farciment (padding) del bloc de l'algorisme: "
+					+ algorithm + "Exception: " + ex);
 		}
 			return null;
 	}
@@ -122,46 +129,31 @@ public class Cypher
 		return new String(decode(msg));
 	}
 	
-	// TODO
-	public File encode(File fileIn, File fileOut) throws IOException, ShortBufferException 		// Xifrar
+	
+	public void encode(File fileIn, File fileOut) throws IOException, ShortBufferException 		// Xifrar
 	{
 		try(InputStream in = new FileInputStream(fileIn);OutputStream out = new FileOutputStream(fileOut) ) {
 			byte[] byteArray = new byte[1024];
-			byte[] outBytes = new byte[4096];
-			int outCount = 0;
 			int bytesCount = 0;
 			
 			ci.init(Cipher.ENCRYPT_MODE, secretKey);
-			
-			// DO NOT WORK
-//			while((bytesCount = in.read(byteArray)) != -1) {
-//				ci.update(byteArray, 0, bytesCount, outBytes, outCount);
-//				outCount += bytesCount;
-//			}
-//			outCount += ci.doFinal(outBytes, outCount);
-//			out.write(outBytes, 0, outCount);
-//			out.close();
 
-
-			while((bytesCount = in.read(byteArray)) != -1) {
+			while((bytesCount = in.read(byteArray)) != -1)
 				out.write(ci.update(byteArray, 0, bytesCount));
 				
-			}
 			out.write(ci.doFinal());
-			out.close();
-		
 		} catch (InvalidKeyException ex) {
-			System.err.println("Error la clave privada utilizada " + secretKey.toString());
+			System.err.println("Error amb la clau privada: "
+					+ secretKey.toString() + "Exception: " + ex);
 		} catch (IllegalBlockSizeException ex) {
-			System.err.println("Error en el tamaño de bloque del algortimo " + algorithm);
+			System.err.println("Error amb el tamany del bloc de l'algorisme: "
+					+ algorithm + "Exception: " + ex);
 		} catch (BadPaddingException ex) {
-			System.err.println("Error en el relleno de bloque del algortimo" + algorithm);
+			System.err.println("Error amb el farciment (padding) del bloc de l'algorisme: "
+					+ algorithm + "Exception: " + ex);
 		}
-		
-		return null;
 	}
 	
-	// TODO
 	public File decode(File fileIn, File fileOut) throws IOException, ShortBufferException 		// Desxifrar
 	{
 		try(InputStream in = new FileInputStream(fileIn);OutputStream out = new FileOutputStream(fileOut) ) {
@@ -174,16 +166,74 @@ public class Cypher
 				out.write(ci.update(byteArray, 0, bytesCount));
 			}
 			out.write(ci.doFinal());
-			out.close();
+
 		} catch (InvalidKeyException ex) {
-			System.err.println("Error la clave privada utilizada " + secretKey.toString());
+			System.err.println("Error amb la clau privada: "
+					+ secretKey.toString() + "Exception: " + ex);
 		} catch (IllegalBlockSizeException ex) {
-			System.err.println("Error en el tamaño de bloque del algortimo " + algorithm);
+			System.err.println("Error amb el tamany del bloc de l'algorisme: "
+					+ algorithm + "Exception: " + ex);
 		} catch (BadPaddingException ex) {
-			System.err.println("Error en el relleno de bloque del algortimo" + algorithm);
+			System.err.println("Error amb el farciment (padding) del bloc de l'algorisme: "
+					+ algorithm + "Exception: " + ex);
 		}
 		
 		return null;
 	}
 	
+	// With CipherInputStream or CipherOutputStream.
+	// You can use them for encrypt and decrypt indistinctly.
+	public void encodeStream(File fileIn, File fileOut) throws IOException 	// Xifrar
+	{
+		InputStream in = null;
+		OutputStream out = null;
+		CipherOutputStream cos = null;
+		try	{
+			ci.init(Cipher.ENCRYPT_MODE, secretKey);
+			in = new FileInputStream(fileIn);
+			out = new FileOutputStream(fileOut);
+			cos = new CipherOutputStream(out, ci);
+			
+			byte[] byteArray = new byte[8];
+			int bytesCount = 0;
+			
+			while((bytesCount = in.read(byteArray)) != -1)
+				cos.write(byteArray, 0, bytesCount);
+			
+		} catch (InvalidKeyException ex) {
+			System.err.println("Error amb la clau privada: "
+					+ secretKey.toString() + "Exception: " + ex);
+		} finally {
+			if (in != null)		in.close();
+			if (out != null)	out.close();
+			if (cos != null)	cos.close();
+		}
+	}
+	
+	public void decodeStream(File fileIn, File fileOut) throws IOException		// Desxifrar
+	{
+		InputStream in = null;
+		OutputStream out = null;
+		CipherInputStream cis = null;
+		try	{
+			ci.init(Cipher.DECRYPT_MODE, secretKey);
+			in = new FileInputStream(fileIn);
+			out = new FileOutputStream(fileOut);
+			cis = new CipherInputStream(in, ci);
+			
+			byte[] byteArray = new byte[1024];
+			int bytesCount = 0;
+			
+			while((bytesCount = cis.read(byteArray)) != -1)
+				out.write(byteArray, 0, bytesCount);
+			
+		} catch (InvalidKeyException ex) {
+			System.err.println("Error amb la clau privada: "
+					+ secretKey.toString() + "Exception: " + ex);
+		} finally {
+			if (in != null)		in.close();
+			if (out != null)	out.close();
+			if (cis != null)	cis.close();
+		}
+	}
 }

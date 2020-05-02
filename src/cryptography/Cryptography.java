@@ -27,11 +27,11 @@ public class Cryptography
 			Cypher AESCipher = new Cypher("AES","contrsenya1", 256,"AES");
 
 			// Xifratge DES. En realitat la clau té 64 bits, encara que demana 56
-			Cypher DESCipher = new Cypher("DES/ECB/PKCS5Padding",null, 56 , "DES");
+//			Cypher DESCipher = new Cypher("DES/ECB/PKCS5Padding",null, 56 , "DES");
 			//Cypher DESCipher = new Cypher("DES","contrasenya1", 64 , "DES");
 			
 			// Xifratge T-DES. En realitat la clau té 192 bits, encara que demana 168
-			Cypher TDESAESCipher = new Cypher("DESede",null, 168 , "DESede");
+//			Cypher TDESAESCipher = new Cypher("DESede",null, 168 , "DESede");
 			//Cypher AESCipher = new Cypher("DESede/ECB/PKCS5Padding","contrasenya1", 192 , "DESede");
 			
 			
@@ -47,12 +47,11 @@ public class Cryptography
 							AESCipher.encode("Text a xifrar".getBytes())));
 			
 			// Xifratge i desxifratge d'un fitxer
-			
-			Cypher AESCipher2 = new Cypher("AES","contrsenya1", 256,"AES");
-			AESCipher2.encode(new File("project_files"+File.separator+"image.jpg")
+			Cypher AESCipherStream = new Cypher("AES","contrsenya1", 256,"AES");
+			AESCipherStream.encodeStream(new File("project_files"+File.separator+"image.jpg")
 					, new File("project_files"+File.separator+"encoded_image.jpg"));
 			
-			AESCipher2.decode(new File("project_files"+File.separator+"encoded_image.jpg")
+			AESCipherStream.decode(new File("project_files"+File.separator+"encoded_image.jpg")
 					, new File("project_files"+File.separator+"decoded_image.jpg"));
 
 		} catch (IOException ex) {
