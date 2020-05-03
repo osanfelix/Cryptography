@@ -194,7 +194,7 @@ public class Cypher
 			out = new FileOutputStream(fileOut);
 			cos = new CipherOutputStream(out, ci);
 			
-			byte[] byteArray = new byte[8];
+			byte[] byteArray = new byte[1024];
 			int bytesCount = 0;
 			
 			while((bytesCount = in.read(byteArray)) != -1)
@@ -206,8 +206,7 @@ public class Cypher
 					+ secretKey.toString() + "Exception: " + ex);
 		} finally {
 			if (in != null)		in.close();
-			if (out != null)	out.close();
-			if (cos != null)	cos.close();
+			if (cos != null)	cos.close();	// Here it executes doFinal()
 		}
 	}
 	
@@ -232,7 +231,6 @@ public class Cypher
 			System.err.println("Error amb la clau privada: "
 					+ secretKey.toString() + "Exception: " + ex);
 		} finally {
-			if (in != null)		in.close();
 			if (out != null)	out.close();
 			if (cis != null)	cis.close();
 		}
