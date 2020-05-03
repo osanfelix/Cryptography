@@ -199,6 +199,7 @@ public class Cypher
 			
 			while((bytesCount = in.read(byteArray)) != -1)
 				cos.write(byteArray, 0, bytesCount);
+			cos.flush();
 			
 		} catch (InvalidKeyException ex) {
 			System.err.println("Error amb la clau privada: "
