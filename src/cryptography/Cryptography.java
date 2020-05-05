@@ -2,13 +2,16 @@ package cryptography;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-
 
 public class Cryptography
 {
 	public static void main(String[] args)
 	{
+		CryptoExamples.SimpleDigest();
+		CryptoExamples.SimpleSimmetricEncryption(true);
+		
+		
+		// CYPHER WRAPPER EXAMPLES
 		String secretKey = "Contrasenya1#";
 		
 		testCipher("AES/CBC/PKCS5Padding", 256, "AES");
@@ -57,12 +60,12 @@ public class Cryptography
 		byte[] encodedInput = cipher.encodeString(input);
 		
 		System.out.println("Xifrar la cadena de text: \""+input+"\": "
-					+ Arrays.toString(encodedInput));
+					+ new String(encodedInput));
 		
 		// Desxifrar
-		String originalInput = cipher.decodeString(encodedInput);
+		String decryptedInput = cipher.decodeString(encodedInput);
 		System.out.println("Desxifrar la cadena de text \""+input+"\": "
-					+ originalInput);
+					+ decryptedInput);
 			
 		// Xifratge i desxifratge d'un fitxer
 		cipher.encode(new File("project_files"+File.separator+"image.jpg")
@@ -72,7 +75,7 @@ public class Cryptography
 				, new File("project_files"+File.separator+"decoded_image.jpg"));
 		
 		
-		// Xifratge i desxifratge d'un fitxer amb Chiper Streams
+		// Xifratge i desxifratge d'un fitxer amb Cipher Streams
 		cipher.encodeStream(new File("project_files"+File.separator+"image.jpg")
 				, new File("project_files"+File.separator+"encoded_image.jpg"));
 

@@ -191,6 +191,7 @@ public class Cypher
 	
 	// With CipherInputStream or CipherOutputStream.
 	// You can use them for encrypt and decrypt indistinctly.
+	// Here there's tow examples with input and ouuput cipher stremas
 	public void encodeStream(File fileIn, File fileOut) throws IOException 	// Xifrar
 	{
 		InputStream in = null;
