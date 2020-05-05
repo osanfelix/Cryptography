@@ -1,21 +1,25 @@
-// Xifratge AES
+// Chiper 'Wrapper'. More info in:
 // More info in https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html
+
 // https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJCEProvider
+
 // Garceta 269 DELETE
 
 package cryptography;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import javax.crypto.*;
+import javax.crypto.spec.IvParameterSpec;
 
 
 public class Cypher
@@ -25,20 +29,17 @@ public class Cypher
 												// AES/ECB/PKCS5Padding 
 												// AES/CBC/NoPadding, 
 												// Key Algorithms: AES, DES
+	final String mode;							// ECB, CBC
 
 	protected int			keyLength = -1;		// Ex: 56, 128, 192, 256, 512
-	
+	protected byte[] iv;						// For 'CBC' mode
 
 	// Cipher variables
 	protected Cipher		ci;
 	protected KeyGenerator	keyGen;
 	protected SecretKey		secretKey;
 	
-	public Cypher()
-	{
-		this("AES",128,"AES");
-	}
-	
+
 	public Cypher(String algorithm, String key, int keyLength, String keyAlgorithm)
 	{
 		try {
@@ -46,6 +47,7 @@ public class Cypher
 				keyGen = KeyGenerator.getInstance(keyAlgorithm);
 				keyGen.init(keyLength);
 				secretKey = keyGen.generateKey();
+				
 			} else {			// Use the digest of a string
 				secretKey = this.convertKey(key, keyLength, keyAlgorithm);
 			}
@@ -62,12 +64,39 @@ public class Cypher
 		} catch (NoSuchPaddingException ex) {
 			System.err.println("Error amb l'algorisme: "
 					+ algorithm + "Exception: " + ex);
+		} finally {
+			if(algorithm.contains("/"))
+				mode = algorithm.split("/")[1];
+			else	mode = "ECB";
 		}
 	}
 	
 	public Cypher(String algorithm, int keyLength, String keyAlgorithm)
 	{
 		this(algorithm, null, keyLength, keyAlgorithm);
+	}
+	
+	// action = Cipher.ENCRYPT_MODE or Cipher.DECRYPT_MODE
+	public void initCypher(int action) throws InvalidKeyException,
+									InvalidAlgorithmParameterException	
+	{
+		if(this.mode.equals("CBC")) {
+			ci.init(action, secretKey, new IvParameterSpec(iv));
+		} else
+			ci.init(action, secretKey);
+		
+	}
+		
+	public byte[] generateIV() {
+		iv = new byte[ci.getBlockSize()];
+		SecureRandom byteRandomizer = new SecureRandom();
+		byteRandomizer.nextBytes(iv);
+		return iv;
+	}
+	
+	public void setIV(byte[] ivector)
+	{
+		iv = ivector;
 	}
 	
 	public final SecretKey convertKey(String key, int keyLength, String keyAlgorithm)
@@ -77,66 +106,59 @@ public class Cypher
 		return keyHash.passwordKeyGenerator(key, keyLength, keyAlgorithm);
 	}
 	
-	public byte[] encode(byte[] msg)		// Xifrar
+	// Encrypts or decrypts.
+	public byte[] codec(int action, byte[] msg)
 	{
-		byte[] encodedText = null;
+		byte[] codecText = null;
 		try {
-			ci.init(Cipher.ENCRYPT_MODE, secretKey);
-			encodedText = ci.doFinal(msg);
+			initCypher(action);
+			codecText = ci.doFinal(msg);
 			
-		} catch (InvalidKeyException ex) {
-			System.err.println("Error amb la clau privada: "
-					+ secretKey.toString() + "Exception: " + ex);
 		} catch (IllegalBlockSizeException ex) {
 			System.err.println("Error amb el tamany del bloc de l'algorisme: "
 					+ algorithm + "Exception: " + ex);
 		} catch (BadPaddingException ex) {
 			System.err.println("Error amb el farciment (padding) del bloc de l'algorisme: "
 					+ algorithm + "Exception: " + ex);
+		} catch (InvalidKeyException ex) {
+			System.err.println("Error amb la clau privada: "
+					+ secretKey.toString() + "Exception: " + ex);
+		} catch (InvalidAlgorithmParameterException ex) {
+			System.err.println("Error amb els paràmetres del cipher: "
+					+ algorithm + "Exception: " + ex);
 		}
-		return encodedText;
+		return codecText;
+	}
+	public byte[] encode(byte[] msg)		// Xifrar
+	{
+		return codec(Cipher.ENCRYPT_MODE,msg);
 	}
 	
 	public byte[] decode(byte[] encodedText)		// Desxifrar
 	{
-		byte[] decodedText = null;
-		try {
-			ci.init(Cipher.DECRYPT_MODE, secretKey);
-			decodedText = ci.doFinal(encodedText);
-
-			return decodedText;
-		} catch (InvalidKeyException ex) {
-			System.err.println("Error amb la clau privada: "
-					+ secretKey.toString() + "Exception: " + ex);
-		} catch (IllegalBlockSizeException ex) {
-			System.err.println("Error amb el tamany del bloc de l'algorisme: "
-					+ algorithm + "Exception: " + ex);
-		} catch (BadPaddingException ex) {
-			System.err.println("Error amb el farciment (padding) del bloc de l'algorisme: "
-					+ algorithm + "Exception: " + ex);
-		}
-			return null;
+		return codec(Cipher.DECRYPT_MODE,encodedText);
 	}
 	
 	// String encode/decode
-	public String encodeString(String msg)		// Xifrar
+	public byte[] encodeString(String msg)		// Xifrar
 	{
-		return new String(encode(msg.getBytes(StandardCharsets.UTF_8)));
+		return codec(Cipher.ENCRYPT_MODE,msg.getBytes(StandardCharsets.UTF_8));
 	}
 	
 	public String decodeString(byte[] msg)		// desxifrar
 	{
-		return new String(decode(msg));
+		return new String(codec(Cipher.DECRYPT_MODE,msg));
 	}
 	
 	
-	public void encode(File fileIn, File fileOut) throws IOException, ShortBufferException 		// Xifrar
+	// Encrypts or decrypts a file
+	public void codec(int action, File fileIn, File fileOut) throws IOException
 	{
 		try(InputStream in = new FileInputStream(fileIn);OutputStream out = new FileOutputStream(fileOut) ) {
 			byte[] byteArray = new byte[1024];
 			int bytesCount = 0;
 			
-			ci.init(Cipher.ENCRYPT_MODE, secretKey);
+			initCypher(action);
 
 			while((bytesCount = in.read(byteArray)) != -1)
 				out.write(ci.update(byteArray, 0, bytesCount));
@@ -151,34 +173,20 @@ public class Cypher
 		} catch (BadPaddingException ex) {
 			System.err.println("Error amb el farciment (padding) del bloc de l'algorisme: "
 					+ algorithm + "Exception: " + ex);
+		} catch (InvalidAlgorithmParameterException ex) {
+			System.err.println("Error amb els paràmetres del cipher: "
+					+ algorithm + "Exception: " + ex);
 		}
 	}
-	
-	public File decode(File fileIn, File fileOut) throws IOException, ShortBufferException 		// Desxifrar
-	{
-		try(InputStream in = new FileInputStream(fileIn);OutputStream out = new FileOutputStream(fileOut) ) {
-			byte[] byteArray = new byte[1024];
-			int bytesCount = 0;
-			
-			ci.init(Cipher.DECRYPT_MODE, secretKey);
-
-			while((bytesCount = in.read(byteArray)) != -1) {
-				out.write(ci.update(byteArray, 0, bytesCount));
-			}
-			out.write(ci.doFinal());
-
-		} catch (InvalidKeyException ex) {
-			System.err.println("Error amb la clau privada: "
-					+ secretKey.toString() + "Exception: " + ex);
-		} catch (IllegalBlockSizeException ex) {
-			System.err.println("Error amb el tamany del bloc de l'algorisme: "
-					+ algorithm + "Exception: " + ex);
-		} catch (BadPaddingException ex) {
-			System.err.println("Error amb el farciment (padding) del bloc de l'algorisme: "
-					+ algorithm + "Exception: " + ex);
-		}
 		
-		return null;
+	public void encode(File fileIn, File fileOut) throws IOException	// Xifrar
+	{
+		codec(Cipher.ENCRYPT_MODE, fileIn, fileOut);
+	}
+	
+	public void decode(File fileIn, File fileOut) throws IOException	// Desxifrar
+	{
+		codec(Cipher.DECRYPT_MODE, fileIn, fileOut);
 	}
 	
 	// With CipherInputStream or CipherOutputStream.
@@ -189,7 +197,7 @@ public class Cypher
 		OutputStream out = null;
 		CipherOutputStream cos = null;
 		try	{
-			ci.init(Cipher.ENCRYPT_MODE, secretKey);
+			initCypher(Cipher.ENCRYPT_MODE);
 			in = new FileInputStream(fileIn);
 			out = new FileOutputStream(fileOut);
 			cos = new CipherOutputStream(out, ci);
@@ -204,6 +212,9 @@ public class Cypher
 		} catch (InvalidKeyException ex) {
 			System.err.println("Error amb la clau privada: "
 					+ secretKey.toString() + "Exception: " + ex);
+		} catch (InvalidAlgorithmParameterException ex) {
+			System.err.println("Error amb els paràmetres del cipher: "
+					+ algorithm + "Exception: " + ex);
 		} finally {
 			if (in != null)		in.close();
 			if (cos != null)	cos.close();	// Here it executes doFinal()
@@ -216,7 +227,7 @@ public class Cypher
 		OutputStream out = null;
 		CipherInputStream cis = null;
 		try	{
-			ci.init(Cipher.DECRYPT_MODE, secretKey);
+			initCypher(Cipher.DECRYPT_MODE);
 			in = new FileInputStream(fileIn);
 			out = new FileOutputStream(fileOut);
 			cis = new CipherInputStream(in, ci);
@@ -230,6 +241,9 @@ public class Cypher
 		} catch (InvalidKeyException ex) {
 			System.err.println("Error amb la clau privada: "
 					+ secretKey.toString() + "Exception: " + ex);
+		} catch (InvalidAlgorithmParameterException ex) {
+			System.err.println("Error amb els paràmetres del cipher: "
+					+ algorithm + "Exception: " + ex);
 		} finally {
 			if (out != null)	out.close();
 			if (cis != null)	cis.close();

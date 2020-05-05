@@ -2,15 +2,29 @@ package cryptography;
 
 import java.io.File;
 import java.io.IOException;
-import javax.crypto.ShortBufferException;
+import java.util.Arrays;
 
 
 public class Cryptography
 {
 	public static void main(String[] args)
 	{
+		String secretKey = "Contrasenya1#";
+		
+		testCipher("AES/CBC/PKCS5Padding", 256, "AES");
+		
+		// Xifratge DES. En realitat la clau té 64 bits, encara que demana 56
+		//~testCipher("DES/CBC/PKCS5Padding", 56, "DES");
+		//~testCipher("DES/CBC/PKCS5Padding", 64, "DES", secretKey);
+		
+		// Xifratge T-DES. En realitat la clau té 192 bits, encara que demana 168
+		//~testCipher("DESede/CBC/PKCS5Padding", 168, "DESede");
+		//~testCipher("DESede/CBC/PKCS5Padding", 192, "DESede", secretKey);
+	}
+
+	public static void testDigest()
+	{	
 		try {
-			
 			// ####################### EXEMPLES DE RESUM #######################
 			// Resum d'una cadena de text
 			System.out.println("Resum de la cadena \"Text a resumir\": " +
@@ -20,46 +34,53 @@ public class Cryptography
 			System.out.println("Resum del fitxer \"image.jpg\": " + 
 					(new Digest("MD5")).doHash(
 						new File("project_files"+File.separator+"image.jpg")));
-			
-			
-// ###################### EXEMPLES DE XIFRAT #######################
-			// Xifratge AES
-			Cypher AESCipher = new Cypher("AES","contrsenya1", 256,"AES");
-
-			// Xifratge DES. En realitat la clau té 64 bits, encara que demana 56
-			Cypher DESCipher = new Cypher("DES/ECB/PKCS5Padding",null, 56 , "DES");
-			//Cypher DESCipher = new Cypher("DES","contrasenya1", 64 , "DES");
-			
-			// Xifratge T-DES. En realitat la clau té 192 bits, encara que demana 168
-			Cypher TDESAESCipher = new Cypher("DESede",null, 168 , "DESede");
-			//Cypher AESCipher = new Cypher("DESede/ECB/PKCS5Padding","contrasenya1", 192 , "DESede");
-			
-			
-			// Xifratge i desxifratge d'una cadena de text
-			String input = "Text a xifrar";
-			
-
-			System.out.println("Xifrar la cadena de text \""+input+"\": "
-					+ AESCipher.encodeString("Text a xifrar"));
-			
-			System.out.println("Desxifrar la cadena de text \""+input+"\": "
-					+ AESCipher.decodeString(
-							AESCipher.encode("Text a xifrar".getBytes())));
-			
-			// Xifratge i desxifratge d'un fitxer
-			Cypher AESCipherStream = new Cypher("AES","contrsenya1", 256,"AES");
-			AESCipherStream.encode(new File("project_files"+File.separator+"image.jpg")
-					, new File("project_files"+File.separator+"encoded_image.jpg"));
-			
-			AESCipherStream.decode(new File("project_files"+File.separator+"encoded_image.jpg")
-					, new File("project_files"+File.separator+"decoded_image.jpg"));
 
 		} catch (IOException ex) {
 			System.err.println("Error d'entrada/sortida: " + ex);
-		} catch (ShortBufferException ex) {
-			System.err.println("Error de buffer: " + ex);
 		}
+	}
+	
+	public static void testCipher(String algoritm, int lenghtKey, String algKey, String... secretKey)
+	{
+		try {
 		
-}
+			// Instantiate cipher
+		Cypher cipher = new Cypher(algoritm, secretKey.length > 0? secretKey[0] : null, lenghtKey,algKey);
+			// Only for CBC mode: set an IV vector
+		byte[] iv = cipher.generateIV();	
+			// or cipher.setIV("1234567890ABCDEF".getBytes());
+		
+		// Xifratge i desxifratge d'una cadena de text
+		String input = "Text a xifrar";
+		
+		// Xifrar
+		byte[] encodedInput = cipher.encodeString(input);
+		
+		System.out.println("Xifrar la cadena de text: \""+input+"\": "
+					+ Arrays.toString(encodedInput));
+		
+		// Desxifrar
+		String originalInput = cipher.decodeString(encodedInput);
+		System.out.println("Desxifrar la cadena de text \""+input+"\": "
+					+ originalInput);
+			
+		// Xifratge i desxifratge d'un fitxer
+		cipher.encode(new File("project_files"+File.separator+"image.jpg")
+				, new File("project_files"+File.separator+"encoded_image.jpg"));
 
+		cipher.decode(new File("project_files"+File.separator+"encoded_image.jpg")
+				, new File("project_files"+File.separator+"decoded_image.jpg"));
+		
+		
+		// Xifratge i desxifratge d'un fitxer amb Chiper Streams
+		cipher.encodeStream(new File("project_files"+File.separator+"image.jpg")
+				, new File("project_files"+File.separator+"encoded_image.jpg"));
+
+		cipher.decodeStream(new File("project_files"+File.separator+"encoded_image.jpg")
+				, new File("project_files"+File.separator+"decoded_image.jpg"));
+		
+		} catch (IOException ex) {
+			System.err.println("Error d'entrada/sortida: " + ex);
+		}
+	}
 }
