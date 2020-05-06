@@ -7,14 +7,17 @@ public class Cryptography
 {
 	public static void main(String[] args)
 	{
+		// SIMPLE EXAMPLES
 		CryptoExamples.SimpleDigest();
 		CryptoExamples.SimpleSimmetricEncryption(true);
+//		CryptoExamples.SimpleAsymmetricEncryption();
+//		CryptoExamples.SimpleAsymmetricEncryptionWithWrappedKey();
 		
 		
-		// CYPHER WRAPPER EXAMPLES
-		String secretKey = "Contrasenya1#";
-		
-		testCipher("AES/CBC/PKCS5Padding", 256, "AES");
+		// SIMMETRIC CYPHER WRAPPER EXAMPLES
+//		String secretKey = "Contrasenya1#";
+//		
+//		testCipher("AES/CBC/PKCS5Padding", 256, "AES");
 		
 		// Xifratge DES. En realitat la clau té 64 bits, encara que demana 56
 		//~testCipher("DES/CBC/PKCS5Padding", 56, "DES");

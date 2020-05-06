@@ -1,9 +1,7 @@
-// Chiper 'Wrapper'. More info in:
+// Simmetric Cipher 'Wrapper'. More info in:
 // More info in https://docs.oracle.com/javase/8/docs/api/javax/crypto/Cipher.html
 
 // https://docs.oracle.com/javase/8/docs/technotes/guides/security/SunProviders.html#SunJCEProvider
-
-// Garceta 269 DELETE
 
 package cryptography;
 
