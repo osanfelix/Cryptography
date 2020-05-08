@@ -1,8 +1,9 @@
 // Some examples of digest and encryption with 
-// MessageDigest and Cipher classes
+// MessageDigest, Cipher and Signature classes
 
 package cryptography;
 
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
@@ -12,6 +13,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.Signature;
+import java.security.SignatureException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
@@ -23,10 +27,7 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 
-/**
- *
- * @author osanf
- */
+
 public class CryptoExamples
 {
 	public static void SimpleDigest()
@@ -144,6 +145,8 @@ public class CryptoExamples
 			KeyPair keys = null;
 
 			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+			//~SecureRandom randomizer = SecureRandom.getInstance("SHA1PRNG");
+			//~keyGen.initialize(keyLength, randomizer);
 			keyGen.initialize(keyLength);
 			keys = keyGen.genKeyPair();
 
@@ -197,7 +200,8 @@ public class CryptoExamples
 		
 //	RSA is only able to encrypt data to a maximum amount equal to your key size
 //	(2048 bits = 256 bytes), minus any padding and header data (11 bytes for PKCS#1 v1.5 padding).
-//
+//	MAX encrypted data = 256 - 11 = 245 bytes (MAX key size = 2048 bits)
+//	
 //	As a result, it is often not possible to encrypt files with RSA directly
 //	(and RSA is not designed for this). If you want to encrypt more data, you can do something like:
 //	1. Generate a 256-bit random keystring K.
@@ -210,7 +214,7 @@ public class CryptoExamples
 		//String		algorithm = 
 		String		AsimAlgorithm = "RSA/ECB/PKCS1Padding";
 		String		SimAlgorithm  =  "AES/ECB/PKCS5Padding";
-		int			asimkeyLength = 1024;	// 1024, 2048
+		int			asimkeyLength = 1024;	// 512, 1024, 2048
 		int			simkeyLength  = 256;		// 10128, 192, 256
 		
 		try {
@@ -282,4 +286,83 @@ public class CryptoExamples
 					+ " l'algorisme: " + ex);
 		}
 	}
+	
+	// Signature examples
+	public static void simpleSignature()
+	{
+		String algorithm = "SHA1withRSA";
+		int keyLenght = 2048;	// Lenght beetween 512 and 2048, multiply of 64.
+		
+		byte[] signedData = "Documento a firmar".getBytes(StandardCharsets.UTF_8);
+		byte[] signature = null;		// SHA hash ecrypted with a RSA private key
+		try {
+			
+			// GENERATE KEY PAIR
+			KeyPair keys = null;
+
+			KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA"); 
+			keyGen.initialize(keyLenght);
+			keys = keyGen.genKeyPair();
+
+			PrivateKey privateKey = keys.getPrivate();
+			PublicKey publicKey = keys.getPublic();
+//			
+			Signature signer = Signature.getInstance(algorithm);
+			signer.initSign(privateKey);
+			signer.update(signedData);
+			signature = signer.sign();
+			System.out.println(signature.length);
+			
+			System.out.println(CryptoUtils.bytesToHex(signature));
+			
+			try {
+				// DO IT HANDMADE
+				Cipher ci = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+				ci.init(Cipher.ENCRYPT_MODE, privateKey);
+				Digest digest = new Digest("SHA-1");
+				byte[] planeHash = digest.doHash(signedData);
+				byte[] encryptedHash = ci.doFinal(planeHash);
+				
+				System.out.println(CryptoUtils.bytesToHex(encryptedHash));
+				
+				// DO IT HANDMADE
+				Cipher ci2 = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+				ci2.init(Cipher.DECRYPT_MODE, publicKey);
+				Digest digest2 = new Digest("SHA-1");
+				byte[] planeHash2 = digest.doHash(signedData);
+				byte[] unencryptedHash = ci.doFinal(planeHash);
+				
+				System.out.println(CryptoUtils.bytesToHex(unencryptedHash));
+			} catch (NoSuchPaddingException ex) {
+				Logger.getLogger(CryptoExamples.class.getName()).log(Level.SEVERE, null, ex);
+			} catch (IllegalBlockSizeException ex) {
+				Logger.getLogger(CryptoExamples.class.getName()).log(Level.SEVERE, null, ex);
+			} catch (BadPaddingException ex) {
+				Logger.getLogger(CryptoExamples.class.getName()).log(Level.SEVERE, null, ex);
+			}
+			
+			// Send 'Signed data' and 'signature' 
+			
+			// Verify signature
+			Signature verifier = Signature.getInstance(algorithm);
+			verifier.initVerify(publicKey);
+			verifier.update(signedData);
+			if (verifier.verify(signature))
+				System.out.println("Signatura verificada");
+			else
+				System.out.println("La signatura no coincideix");
+			
+		// Eceptions of Signature.getInstance
+		} catch (NoSuchAlgorithmException ex) {
+			System.err.println("Error: No existeix l'algorisme: "
+				+ algorithm + "Exception: " + ex);
+		} catch (InvalidKeyException ex) {
+			System.err.println("Error amb la clau: " + ex);
+		} catch (SignatureException ex) {
+			System.err.println("Error amb la signatura: " + ex);
+		}
+		
+	}
+	
+	
 }
