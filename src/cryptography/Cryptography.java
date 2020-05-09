@@ -8,8 +8,8 @@ public class Cryptography
 	public static void main(String[] args)
 	{
 		// SIMPLE EXAMPLES
-		CryptoExamples.SimpleDigest();
-		CryptoExamples.SimpleSimmetricEncryption(true);
+//		CryptoExamples.SimpleDigest();
+//		CryptoExamples.SimpleSimmetricEncryption(true);
 //		CryptoExamples.SimpleAsymmetricEncryption();
 //		CryptoExamples.SimpleAsymmetricEncryptionWithWrappedKey();
 		CryptoExamples.simpleSignature();

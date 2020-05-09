@@ -133,9 +133,8 @@ public class CryptoExamples
 	
 	public static void SimpleAsymmetricEncryption()	// RSA
 	{
-		//String		algorithm = "AES/CBC/PKCS5Padding";
 		String		algorithm = "RSA/ECB/PKCS1Padding";
-		int			keyLength = 1024;	// 1024, 2048
+		int			keyLength = 512;	// 1024, 2048
 		
 		try {
 			// INSTANTIATE CIPHER
@@ -170,10 +169,10 @@ public class CryptoExamples
 			byte[] decryptedMessage = ci.doFinal(encryptedMessage);
 		
 			
-			System.out.println("Xifratge text '+" + message + "':"
-					+ new String(encryptedMessage));
-			System.out.println("Desxifratge text '+" + new String(encryptedMessage)
-					+ "':" + new String(decryptedMessage));
+			System.out.println("Xifratge text '" + message + "':"
+					+ (new String(encryptedMessage)));
+			System.out.println("Desxifratge text '" + (new String(encryptedMessage))
+					+ "':" + (new String(decryptedMessage)));
 			
 			
 		// Exceptions of Cipher.getInstance and KeyGenerator
@@ -264,10 +263,10 @@ public class CryptoExamples
 			byte[] decryptedMessage = sci.doFinal(encryptedMessage);
 		
 			
-			System.out.println("Xifratge text '+" + message + "':"
-					+ new String(encryptedMessage));
-			System.out.println("Desxifratge text '+" + new String(encryptedMessage)
-					+ "':" + new String(decryptedMessage));
+			System.out.println("Xifratge text '" + message + "':"
+					+ (new String(encryptedMessage)));
+			System.out.println("Desxifratge text '" + (new String(encryptedMessage))
+					+ "':" + (new String(decryptedMessage)));
 			
 			
 		// Exceptions of Cipher.getInstance and KeyGenerator
@@ -291,7 +290,7 @@ public class CryptoExamples
 	public static void simpleSignature()
 	{
 		String algorithm = "SHA1withRSA";
-		int keyLenght = 2048;	// Lenght beetween 512 and 2048, multiply of 64.
+		int keyLenght = 512;	// Lenght beetween 512 and 2048, multiply of 64.
 		
 		byte[] signedData = "Documento a firmar".getBytes(StandardCharsets.UTF_8);
 		byte[] signature = null;		// SHA hash ecrypted with a RSA private key
@@ -306,33 +305,50 @@ public class CryptoExamples
 
 			PrivateKey privateKey = keys.getPrivate();
 			PublicKey publicKey = keys.getPublic();
-//			
+			
+			// SIGN DATA WITH SIGNATURE CLASS
 			Signature signer = Signature.getInstance(algorithm);
 			signer.initSign(privateKey);
 			signer.update(signedData);
 			signature = signer.sign();
-			System.out.println(signature.length);
-			
+//			System.out.println(signature.length);
+			System.out.println("Signatura de les dades:");
 			System.out.println(CryptoUtils.bytesToHex(signature));
-			
+		
 			try {
 				// DO IT HANDMADE
+				// Signature = cipher(alg + hash(data))
+				String sha1_alg = "3021300906052B0E03021A05000414";
 				Cipher ci = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 				ci.init(Cipher.ENCRYPT_MODE, privateKey);
 				Digest digest = new Digest("SHA-1");
-				byte[] planeHash = digest.doHash(signedData);
-				byte[] encryptedHash = ci.doFinal(planeHash);
 				
+				byte[] planeHash = digest.doHash(signedData);
+				byte[] algPlusHash = CryptoUtils.mergeByteArrays(CryptoUtils.hexStringToByteArray(sha1_alg), planeHash);
+				byte[] encryptedHash = ci.doFinal(algPlusHash);
+				
+				// Print signature
+				System.out.println("Signatura de les dades (handmade):");
 				System.out.println(CryptoUtils.bytesToHex(encryptedHash));
 				
 				// DO IT HANDMADE
 				Cipher ci2 = Cipher.getInstance("RSA/ECB/PKCS1Padding");
 				ci2.init(Cipher.DECRYPT_MODE, publicKey);
-				Digest digest2 = new Digest("SHA-1");
 				byte[] planeHash2 = digest.doHash(signedData);
-				byte[] unencryptedHash = ci.doFinal(planeHash);
+				byte[] unencryptedHash = ci2.doFinal(encryptedHash);
 				
+				// Let's see java unencryptedsignature signature:
+				byte[] unencryptedsignature = ci2.doFinal(signature);
+				System.out.println("Desxifratge de la signatura:");
+				System.out.println(CryptoUtils.bytesToHex(unencryptedsignature));
+				
+				// Print hash and decripted signature
+				System.out.println("Hash del document (handmade):");
 				System.out.println(CryptoUtils.bytesToHex(unencryptedHash));
+				System.out.println("Desxifratge de la signatura (handmade):");
+				System.out.println(CryptoUtils.bytesToHex( CryptoUtils.mergeByteArrays(
+						CryptoUtils.hexStringToByteArray(sha1_alg), planeHash2)));
+				
 			} catch (NoSuchPaddingException ex) {
 				Logger.getLogger(CryptoExamples.class.getName()).log(Level.SEVERE, null, ex);
 			} catch (IllegalBlockSizeException ex) {

@@ -4,7 +4,6 @@
 // Get Bytes help:
 // https://docs.oracle.com/javase/8/docs/api/java/lang/String.html#getBytes-java.nio.charset.Charset
 
-// Garceta: pag. 257	DELETE
 
 package cryptography;
 
