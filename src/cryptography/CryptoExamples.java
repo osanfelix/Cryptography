@@ -36,7 +36,7 @@ public class CryptoExamples
 		MessageDigest md = null;
 		String algorithm = "SHA-256";	// SHA-1, MD5, MD2, ...
 		try {
-			md = MessageDigest.getInstance("SHA-256");
+			md = MessageDigest.getInstance(algorithm);
 		}
 		catch (NoSuchAlgorithmException ex) {
 			System.err.println("Error: No existeix l'algorisme " + algorithm +
