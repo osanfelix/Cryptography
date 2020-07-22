@@ -177,10 +177,10 @@ public class CryptoExamples
 			
 		// Exceptions of Cipher.getInstance and KeyGenerator
 		} catch (NoSuchAlgorithmException ex) {
-		System.err.println("Error: No existeix l'algorisme: "
+			System.err.println("Error: No existeix l'algorisme: "
 				+ algorithm + "Exception: " + ex);
 		} catch (NoSuchPaddingException ex) {
-		System.err.println("Error amb l'algorisme: "
+			System.err.println("Error amb l'algorisme: "
 				+ algorithm + "Exception: " + ex);
 		// Exceptions of Cipher.init
 		} catch (InvalidKeyException ex) {
@@ -294,8 +294,8 @@ public class CryptoExamples
 		
 		byte[] signedData = "Documento a firmar".getBytes(StandardCharsets.UTF_8);
 		byte[] signature = null;		// SHA hash ecrypted with a RSA private key
+		
 		try {
-			
 			// GENERATE KEY PAIR
 			KeyPair keys = null;
 
@@ -311,11 +311,11 @@ public class CryptoExamples
 			signer.initSign(privateKey);
 			signer.update(signedData);
 			signature = signer.sign();
-//			System.out.println(signature.length);
+			//~System.out.println(signature.length);	// DELETE
 			System.out.println("Signatura de les dades:");
 			System.out.println(CryptoUtils.bytesToHex(signature));
 		
-			try {
+			try {		// DELETE - Este bloque será la solución a una práctica.
 				// DO IT HANDMADE
 				// Signature = cipher(alg + hash(data))
 				String sha1_alg = "3021300906052B0E03021A05000414";
@@ -358,6 +358,7 @@ public class CryptoExamples
 			}
 			
 			// Send 'Signed data' and 'signature' 
+			// ---->
 			
 			// Verify signature
 			Signature verifier = Signature.getInstance(algorithm);
