@@ -3,12 +3,18 @@
 
 package cryptography;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.Certificate;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
@@ -16,10 +22,12 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CertificateException;
+import java.util.Enumeration;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.BadPaddingException;
-
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
@@ -379,6 +387,38 @@ public class CryptoExamples
 			System.err.println("Error amb la signatura: " + ex);
 		}
 		
+	}
+
+	static void storageManagement()
+	{
+		// Storage JKS without alias passwords
+		String ksFile = "MyKeyStore.jks";
+		String ksPass = "MyPassword";
+		
+		try (FileInputStream in = new FileInputStream ("project_files"+File.separator+ksFile)) {
+			KeyStore ks = KeyStore.getInstance("JKS");	// Other option: JCEKS
+			ks.load(in, ksPass.toCharArray());
+			System.out.println("Keys availables: " + ks.size() + '\n');
+			
+			for(Enumeration<String> alias = ks.aliases(); alias.hasMoreElements();)
+			{
+				String aliasKey = alias.nextElement();
+				System.out.println(aliasKey);
+				Certificate cert = ks.getCertificate(aliasKey);
+				PublicKey publicKey = cert.getPublicKey();
+				PrivateKey privateKey = (PrivateKey)ks.getKey(aliasKey, ksPass.toCharArray());
+				System.out.println("Public key:\n" + CryptoUtils.bytesToHex(publicKey.getEncoded()));
+				System.out.println("Private key:\n" + CryptoUtils.bytesToHex(privateKey.getEncoded()));
+				System.out.println("-------------------\n");
+			}
+			
+			
+		} catch (IOException ex) {
+			System.err.println("Error amb el fitxer del keyStore: " + ex);
+		} catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException | CertificateException ex) {
+			System.err.println("Error amb el keyStore: " + ex);
+		}
+
 	}
 	
 	

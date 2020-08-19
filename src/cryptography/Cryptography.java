@@ -12,7 +12,9 @@ public class Cryptography
 //		CryptoExamples.SimpleSimmetricEncryption(true);
 //		CryptoExamples.SimpleAsymmetricEncryption();
 //		CryptoExamples.SimpleAsymmetricEncryptionWithWrappedKey();
-		CryptoExamples.simpleSignature();
+//		CryptoExamples.simpleSignature();
+		
+		CryptoExamples.storageManagement();
 		
 		// SIMMETRIC CYPHER WRAPPER EXAMPLES
 //		String secretKey = "Contrasenya1#";

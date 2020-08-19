@@ -1,0 +1,11 @@
+Para generar un par de llaves RSA (por defecto Keytool genera DSA): RSA 2048
+keytool  -genkeypair -keyalg RSA -alias Clave3 -keystore MyKeyStore.jks
+
+Listar claves:
+keytool -list -keystore MyKeyStore.jks
+
+Para exportar un certificado:
+keytool -exportcert -alias Clave3 -keystore MyKeyStore.jks -file out3.crt
+
+
+Almacen de claves "MyKeyStore.jks". Contraseña "MyPassword". Las claves no están protegidas por contraseña.
