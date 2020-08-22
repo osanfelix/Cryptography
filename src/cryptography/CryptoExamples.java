@@ -396,23 +396,26 @@ public class CryptoExamples
 		String ksPass = "MyPassword";
 		
 		try (FileInputStream in = new FileInputStream ("project_files"+File.separator+ksFile)) {
+			// INSTANTIATE KeyStore and load file
 			KeyStore ks = KeyStore.getInstance("JKS");	// Other option: JCEKS
 			ks.load(in, ksPass.toCharArray());
-			System.out.println("Keys availables: " + ks.size() + '\n');
 			
+			System.out.println("Keys availables: " + ks.size() + '\n');
+			// FOR EACH ALIAS KEY GET PUBLIC AND PRIVATE KEY
 			for(Enumeration<String> alias = ks.aliases(); alias.hasMoreElements();)
 			{
 				String aliasKey = alias.nextElement();
 				System.out.println(aliasKey);
+				// GET THE PUBLIC KEY BY MEANS THE CERTIFICATE
 				Certificate cert = ks.getCertificate(aliasKey);
 				PublicKey publicKey = cert.getPublicKey();
+				// GET THE PRIVATE KEY
 				PrivateKey privateKey = (PrivateKey)ks.getKey(aliasKey, ksPass.toCharArray());
+				
 				System.out.println("Public key:\n" + CryptoUtils.bytesToHex(publicKey.getEncoded()));
 				System.out.println("Private key:\n" + CryptoUtils.bytesToHex(privateKey.getEncoded()));
 				System.out.println("-------------------\n");
 			}
-			
-			
 		} catch (IOException ex) {
 			System.err.println("Error amb el fitxer del keyStore: " + ex);
 		} catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException | CertificateException ex) {

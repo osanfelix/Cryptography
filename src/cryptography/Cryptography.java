@@ -3,6 +3,7 @@ package cryptography;
 import java.io.File;
 import java.io.IOException;
 
+
 public class Cryptography
 {
 	public static void main(String[] args)
@@ -15,6 +16,7 @@ public class Cryptography
 //		CryptoExamples.simpleSignature();
 		
 		CryptoExamples.storageManagement();
+		printInformation();
 		
 		// SIMMETRIC CYPHER WRAPPER EXAMPLES
 //		String secretKey = "Contrasenya1#";
@@ -30,7 +32,17 @@ public class Cryptography
 		//~testCipher("DESede/CBC/PKCS5Padding", 168, "DESede");
 		//~testCipher("DESede/CBC/PKCS5Padding", 192, "DESede", secretKey);
 	}
-
+	public static void printInformation()
+	{
+		System.out.println("Java Version \t==> " + System.getProperty("java.version"));
+		System.out.println("Java route \t==> " + System.getProperty("java.home"));
+		System.out.println("Java route \t==> " + System.getProperty("java.vendor"));
+		System.out.println("OS name \t==> " + System.getProperty("os.name"));
+		System.out.println("OS version \t==> " + System.getProperty("os.version"));
+		System.out.println("Dir. actual \t==> " + System.getProperty("user.dir"));
+		System.out.println("Home ruta \t==> " + System.getProperty("user.home"));
+		System.out.println("Nom usuari \t==> " + System.getProperty("user.name"));
+	}
 	public static void testDigest()
 	{	
 		try {
