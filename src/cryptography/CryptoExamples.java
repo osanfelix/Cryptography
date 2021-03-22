@@ -23,6 +23,7 @@ import java.security.SecureRandom;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableEntryException;
+import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.Enumeration;
 import java.util.logging.Level;
@@ -406,19 +407,24 @@ public class CryptoExamples
 			{
 				String aliasKey = alias.nextElement();
 				System.out.println(aliasKey);
-				// GET THE PUBLIC KEY BY MEANS THE CERTIFICATE
-				Certificate cert = ks.getCertificate(aliasKey);
-				PublicKey publicKey = cert.getPublicKey();
-				// GET THE PRIVATE KEY
-				PrivateKey privateKey = (PrivateKey)ks.getKey(aliasKey, ksPass.toCharArray());
+				try {
+					// GET THE PUBLIC KEY BY MEANS THE CERTIFICATE
+					Certificate cert = ks.getCertificate(aliasKey);
+					PublicKey publicKey = cert.getPublicKey();
+					System.out.println("Public key:\n" + CryptoUtils.bytesToHex(publicKey.getEncoded()));
+				} catch(KeyStoreException ex){System.out.println("Error amb la clau pública");}
 				
-				System.out.println("Public key:\n" + CryptoUtils.bytesToHex(publicKey.getEncoded()));
-				System.out.println("Private key:\n" + CryptoUtils.bytesToHex(privateKey.getEncoded()));
-				System.out.println("-------------------\n");
+				try {
+					// GET THE PRIVATE KEY
+					PrivateKey privateKey = (PrivateKey)ks.getKey(aliasKey, ksPass.toCharArray());
+					System.out.println("Private key:\n" + CryptoUtils.bytesToHex(privateKey.getEncoded()));
+				} catch(KeyStoreException | UnrecoverableKeyException | NullPointerException ex){System.out.println("Error amb la clau privada");}
+				
+				System.out.println("-----------------------\n");
 			}
 		} catch (IOException ex) {
 			System.err.println("Error amb el fitxer del keyStore: " + ex);
-		} catch (KeyStoreException | NoSuchAlgorithmException | UnrecoverableEntryException | CertificateException ex) {
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException ex) {
 			System.err.println("Error amb el keyStore: " + ex);
 		}
 
